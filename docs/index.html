@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evict or Pay? — Cash-for-Keys vs Eviction, Landlord's Cold Math</title>
+<meta name="description" content="Your tenant stopped paying. Pride says evict. Run the numbers first: the true cost of eviction vs a cash-for-keys offer, side by side.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="theme-color" content="#07080A">
+<style>
+  :root{
+    --bg:#07080A; --surface:#0E1013; --line:#22262d; --line-soft:#181c21;
+    --text:#F5F3EC; --muted:#9a9da3; --faint:#6b6e74;
+    --gold:#E3C878; --gold-dim:#a68f52;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+    font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased}
+  .serif{font-family:Georgia,"Times New Roman",Didot,serif}
+  .wrap{max-width:1060px;margin:0 auto;padding:0 28px}
+  section{padding:88px 0}
+  .eyebrow{font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:var(--gold);
+    margin-bottom:26px;font-weight:600}
+  h1{font-size:clamp(3.4rem,8.5vw,6.2rem);line-height:1.02;font-weight:400;letter-spacing:-.01em}
+  h2{font-size:clamp(2rem,4.4vw,2.9rem);line-height:1.12;font-weight:400;margin-bottom:14px}
+  h3{font-size:1.35rem;font-weight:400;margin-bottom:10px}
+  p.lede{font-size:1.22rem;color:var(--muted);max-width:640px;margin-top:24px}
+  .hero{padding:120px 0 100px;border-bottom:1px solid var(--line-soft)}
+  .hero-rule{width:64px;height:2px;background:var(--gold);margin:34px 0}
+  .hero-num{margin-top:52px}
+  .hero-num .lbl{font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--faint);margin-bottom:12px}
+  .hero-num .val{font-size:clamp(3rem,7vw,5rem);color:var(--gold);line-height:1}
+  .hero-num .sub{color:var(--muted);margin-top:12px;max-width:560px;font-size:1.02rem}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+  @media(max-width:760px){.grid2{grid-template-columns:1fr}}
+  .card{background:var(--surface);border:1px solid var(--line);padding:34px 32px}
+  .card.quiet{background:transparent;border-color:var(--line-soft)}
+  .field{margin-bottom:26px}
+  .field label{display:block;font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:10px;font-weight:600}
+  .field .hint{font-size:.88rem;color:var(--faint);margin-top:8px;line-height:1.5}
+  input[type=number],input[type=text],select{
+    width:100%;background:#050607;border:1px solid var(--line);color:var(--text);
+    font-size:1.35rem;padding:14px 16px;border-radius:0;font-family:inherit;outline:none}
+  input:focus,select:focus{border-color:var(--gold-dim)}
+  input[type=range]{width:100%;appearance:none;-webkit-appearance:none;height:2px;
+    background:#2b3038;outline:none;margin:14px 0 6px}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:22px;height:22px;
+    background:var(--gold);border:none;cursor:pointer;border-radius:50%}
+  input[type=range]::-moz-range-thumb{width:22px;height:22px;background:var(--gold);
+    border:none;cursor:pointer;border-radius:50%}
+  .range-val{font-size:2rem;color:var(--text)}
+  .range-val small{font-size:1rem;color:var(--faint)}
+  .bill-row{display:flex;justify-content:space-between;align-items:baseline;
+    padding:13px 0;border-bottom:1px solid var(--line-soft);font-size:1.02rem}
+  .bill-row .k{color:var(--muted)}
+  .bill-row .v{font-variant-numeric:tabular-nums}
+  .bill-row.sunk .v{color:var(--faint)}
+  .bill-row.sunk .k{color:var(--faint)}
+  .bill-total{display:flex;justify-content:space-between;align-items:baseline;
+    padding:20px 0 4px;font-size:1.3rem}
+  .bill-total .v{color:var(--gold);font-size:1.9rem;font-variant-numeric:tabular-nums}
+  .path-tag{font-size:11px;letter-spacing:.3em;text-transform:uppercase;margin-bottom:18px;
+    font-weight:700}
+  .path-evict .path-tag{color:#c98f8f}
+  .path-cfk .path-tag{color:var(--gold)}
+  .verdict-block{text-align:center;padding:40px 0}
+  .verdict-word{font-size:clamp(3.2rem,9vw,6.5rem);line-height:1;color:var(--gold);
+    margin:26px 0 20px}
+  .verdict-line{font-size:1.3rem;color:var(--muted);max-width:640px;margin:0 auto}
+  .verdict-line strong{color:var(--text);font-weight:600}
+  .be-meter{background:var(--surface);border:1px solid var(--line);padding:44px 40px;
+    text-align:center;margin-top:44px}
+  .be-meter .num{font-size:clamp(2.6rem,6vw,4.2rem);color:var(--gold);margin:14px 0 10px;
+    font-variant-numeric:tabular-nums}
+  table{width:100%;border-collapse:collapse;margin-top:26px;font-size:1rem}
+  th{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--faint);
+    font-weight:600;text-align:left;padding:12px 8px;border-bottom:1px solid var(--line)}
+  td{padding:12px 8px;border-bottom:1px solid var(--line-soft);font-variant-numeric:tabular-nums}
+  tr.hl td{color:var(--gold);font-weight:600}
+  tr.cur td{background:rgba(227,200,120,.05)}
+  .btn{display:inline-block;background:var(--gold);color:#0a0a0a;border:none;
+    font-size:1.02rem;font-weight:700;letter-spacing:.06em;padding:16px 38px;cursor:pointer;
+    font-family:inherit;text-transform:uppercase}
+  .btn:hover{background:#f0d68c}
+  .btn.ghost{background:transparent;color:var(--gold);border:1px solid var(--gold-dim)}
+  .btn.ghost:hover{border-color:var(--gold);color:var(--gold)}
+  .btnrow{display:flex;gap:14px;flex-wrap:wrap;margin-top:26px}
+  .scen{border:1px solid var(--line-soft);padding:18px 20px;margin-bottom:12px;
+    display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .scen .nm{font-size:1.05rem}
+  .scen .dt{font-size:.85rem;color:var(--faint)}
+  .scen button{background:none;border:1px solid var(--line);color:var(--muted);
+    padding:8px 16px;cursor:pointer;font-size:.85rem;font-family:inherit}
+  .scen button:hover{border-color:var(--gold);color:var(--gold)}
+  .note{font-size:.92rem;color:var(--faint);line-height:1.7;max-width:760px}
+  .fine{border-top:1px solid var(--line-soft);padding:60px 0 90px}
+  .kicker{font-size:1.05rem;color:var(--muted);max-width:720px}
+  .divider{height:1px;background:var(--line-soft);border:none;margin:0}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:60px}
+  @media(max-width:760px){.two{grid-template-columns:1fr}}
+  footer{padding:40px 0 70px;color:var(--faint);font-size:.85rem}
+  footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">The Landlord's Cold Math</div>
+    <h1 class="serif">Evict or Pay?</h1>
+    <p class="lede">Your tenant stopped paying. Pride says drag them to court. The numbers usually say <em class="serif" style="color:var(--text)">hand them cash and take the keys</em>. Run it before you file.</p>
+    <div class="hero-rule"></div>
+    <div class="hero-num">
+      <div class="lbl">Paying them to leave saves you</div>
+      <div class="val serif" id="heroSavings">$0</div>
+      <div class="sub" id="heroSub">Enter your numbers below. The verdict updates live.</div>
+    </div>
+  </div>
+</header>
+
+<!-- INPUTS -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow">01 · The Situation</div>
+    <h2 class="serif">What are you actually looking at?</h2>
+    <p class="kicker" style="margin-bottom:52px">Be honest. The eviction fantasy where they pay up and apologize is not one of the options.</p>
+    <div class="grid2">
+      <div class="card">
+        <div class="field">
+          <label for="rent">Monthly rent</label>
+          <input type="number" id="rent" value="1800" min="0" step="50">
+        </div>
+        <div class="field">
+          <label for="unpaid">Months rent already unpaid</label>
+          <input type="number" id="unpaid" value="2" min="0" step="1">
+          <div class="hint">Gone either way. Sunk. It counts in the full bill but plays no part in the decision.</div>
+        </div>
+        <div class="field">
+          <label for="evictMonths">Months from filing to getting the keys back</label>
+          <input type="range" id="evictMonths" min="1" max="9" step="1" value="3">
+          <div class="range-val serif"><span id="evictMonthsVal">3</span> <small>months</small></div>
+          <div class="hint">Courts are slow and tenants know the game. Most contested evictions run 2–5 months; tenant-friendly states stretch longer. When in doubt, guess high.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="field">
+          <label for="legal">Eviction legal + court costs</label>
+          <input type="number" id="legal" value="1500" min="0" step="100">
+          <div class="hint">Attorney, filing fees, process server, the sheriff on move-out day.</div>
+        </div>
+        <div class="field">
+          <label for="damage">Likely extra damage on the eviction path</label>
+          <input type="number" id="damage" value="1500" min="0" step="100">
+          <div class="hint">Evicted tenants rarely leave a thank-you note. Trash-outs, holes, "mysteriously" missing appliances. Cash-for-keys buys you a walkthrough and a signature.</div>
+        </div>
+        <div class="field">
+          <label for="turnover">Turnover make-ready cost</label>
+          <input type="number" id="turnover" value="2500" min="0" step="100">
+          <div class="hint">Paint, clean, small repairs. Applies to both paths, so it cancels in the decision — but it's in the full bill.</div>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label for="offer">Cash-for-keys offer on the table</label>
+          <input type="number" id="offer" value="2000" min="0" step="100">
+          <div class="hint">What you'd pay them to be out in 14 days, unit broom-clean, keys in your hand.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- THE TWO BILLS -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow">02 · The Two Bills</div>
+    <h2 class="serif">Every dollar, both paths.</h2>
+    <p class="kicker" style="margin-bottom:52px">Greyed lines are costs you eat no matter what. The decision only cares about the rest.</p>
+    <div class="grid2">
+      <div class="card path-evict">
+        <div class="path-tag">Path A · Evict</div>
+        <div class="bill-row sunk"><span class="k">Rent already unpaid (sunk)</span><span class="v" id="bEvSunk">$0</span></div>
+        <div class="bill-row"><span class="k">Rent lost during eviction</span><span class="v" id="bEvLost">$0</span></div>
+        <div class="bill-row"><span class="k">Legal + court costs</span><span class="v" id="bEvLegal">$0</span></div>
+        <div class="bill-row"><span class="k">Extra damage risk</span><span class="v" id="bEvDamage">$0</span></div>
+        <div class="bill-row"><span class="k">Turnover make-ready</span><span class="v" id="bEvTurn">$0</span></div>
+        <div class="bill-total"><span class="k serif">Full cost</span><span class="v serif" id="bEvTotal">$0</span></div>
+      </div>
+      <div class="card path-cfk">
+        <div class="path-tag">Path B · Cash for Keys</div>
+        <div class="bill-row sunk"><span class="k">Rent already unpaid (sunk)</span><span class="v" id="bCfkSunk">$0</span></div>
+        <div class="bill-row"><span class="k">Cash paid to tenant</span><span class="v" id="bCfkOffer">$0</span></div>
+        <div class="bill-row"><span class="k">Rent lost during 14-day move-out</span><span class="v" id="bCfkLost">$0</span></div>
+        <div class="bill-row"><span class="k">Turnover make-ready</span><span class="v" id="bCfkTurn">$0</span></div>
+        <div class="bill-total"><span class="k serif">Full cost</span><span class="v serif" id="bCfkTotal">$0</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- VERDICT -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow" style="text-align:center">03 · The Verdict</div>
+    <div class="verdict-block">
+      <div class="verdict-word serif" id="verdictWord">—</div>
+      <p class="verdict-line" id="verdictLine"></p>
+      <div class="be-meter">
+        <div class="eyebrow" style="margin-bottom:0">Your break-even offer</div>
+        <div class="num serif" id="beOffer">$0</div>
+        <p class="note" style="margin:0 auto" id="beNote"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- SENSITIVITY -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow">04 · What If The Court Drags?</div>
+    <h2 class="serif">Every extra month is rent you'll never see again.</h2>
+    <p class="kicker" style="margin-bottom:20px">Savings from paying them to leave, at each eviction timeline. The longer the court takes, the more obvious the answer gets.</p>
+    <div class="two">
+      <div>
+        <table>
+          <thead><tr><th>Eviction takes</th><th>Pay-them savings</th><th>Verdict</th></tr></thead>
+          <tbody id="sensBody"></tbody>
+        </table>
+      </div>
+      <div>
+        <div class="card quiet">
+          <h3 class="serif">Why the answer almost always lands the same way</h3>
+          <p class="note" style="margin-top:12px">An eviction doesn't get you the back rent — a judgment against someone who can't pay rent is a souvenir, not an asset. What it buys you is months of dead unit, legal bills, and a trashed apartment. Cash-for-keys buys you the only things that matter: the keys, a clean unit, and a paying tenant back in fast.</p>
+          <p class="note" style="margin-top:14px">The exception is the principle landlord — the one who'd rather burn $5,000 teaching a lesson than $2,000 solving a problem. That's a hobby, not a business.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- SCENARIOS -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow">05 · Scenarios</div>
+    <h2 class="serif">Save it. Compare units. Copy the summary.</h2>
+    <p class="kicker" style="margin-bottom:36px">Everything stays in your browser. Nothing leaves this page.</p>
+    <div class="btnrow" style="margin-top:0;margin-bottom:36px">
+      <button class="btn" id="saveBtn">Save scenario</button>
+      <button class="btn ghost" id="copyBtn">Copy summary</button>
+    </div>
+    <div id="scenList"></div>
+  </div>
+</section>
+
+<div class="fine">
+  <div class="wrap">
+    <p class="note">Fine print: this is arithmetic, not legal advice. Eviction timelines, notice requirements, and cash-for-keys enforceability vary by state and lease — talk to a local landlord attorney before you file anything or hand anyone cash. Get every cash-for-keys deal in writing: amount, move-out date, unit condition, keys surrendered, and a release. Never pay before the unit is empty and inspected.</p>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <span>Built for landlords who do math before they do pride.</span>
+    <span>thebullbrew · daily tools</span>
+  </div>
+</footer>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const KEY = "evictOrPayScenarios.v1";
+
+function num(id){ const v = parseFloat($(id).value); return isFinite(v) && v >= 0 ? v : 0; }
+function money(n){
+  const r = Math.round(n);
+  return (r < 0 ? "-$" : "$") + Math.abs(r).toLocaleString("en-US");
+}
+function inputs(){
+  return {
+    rent: num("rent"),
+    unpaid: Math.round(num("unpaid")),
+    evictMonths: parseInt($("evictMonths").value, 10),
+    legal: num("legal"),
+    damage: num("damage"),
+    turnover: num("turnover"),
+    offer: num("offer")
+  };
+}
+function calc(i){
+  const sunk = i.unpaid * i.rent;
+  const evLost = i.evictMonths * i.rent;
+  const evForward = evLost + i.legal + i.damage;              // decision-relevant
+  const evTotal = sunk + evForward + i.turnover;
+  const cfkLost = 0.5 * i.rent;                               // ~14 days to vacate
+  const cfkForward = i.offer + cfkLost;                       // decision-relevant
+  const cfkTotal = sunk + cfkForward + i.turnover;
+  const savings = evForward - cfkForward;                     // >0 means paying wins
+  const breakEven = evForward;                                // max offer that still beats eviction
+  return { sunk, evLost, evForward, evTotal, cfkLost, cfkForward, cfkTotal, savings, breakEven };
+}
+function verdictFor(s){
+  if (s >= 1000) return "pay";
+  if (s <= -1000) return "evict";
+  return "tossup";
+}
+const VERDICTS = {
+  pay:   { word: "PAY THEM.", line: s => `Swallow your pride. You come out <strong>${money(s)}</strong> ahead by handing over cash instead of filing papers. The court gives you a judgment; the cash gives you your unit back.` },
+  evict: { word: "EVICT.", line: s => `The math says fight it — paying them costs <strong>${money(-s)}</strong> more than the court route. File properly, document everything, and don't bluff.` },
+  tossup:{ word: "TOSS-UP.", line: s => `Within a grand either way. Negotiate the offer down — every $500 off the cash-for-keys is $500 straight into your pocket.` }
+};
+
+function render(){
+  const i = inputs(), c = calc(i);
+  $("evictMonthsVal").textContent = i.evictMonths;
+
+  // hero
+  const s = c.savings;
+  $("heroSavings").textContent = money(s);
+  $("heroSub").textContent = s >= 1000
+    ? "That's the price of your pride. Pay them, get the keys, move on."
+    : s <= -1000
+    ? "Rare, but the numbers say the court route is cheaper here. File it right."
+    : "Close enough to go either way — negotiate the offer and the answer changes.";
+
+  // bills
+  $("bEvSunk").textContent = money(c.sunk);
+  $("bEvLost").textContent = money(c.evLost);
+  $("bEvLegal").textContent = money(i.legal);
+  $("bEvDamage").textContent = money(i.damage);
+  $("bEvTurn").textContent = money(i.turnover);
+  $("bEvTotal").textContent = money(c.evTotal);
+  $("bCfkSunk").textContent = money(c.sunk);
+  $("bCfkOffer").textContent = money(i.offer);
+  $("bCfkLost").textContent = money(c.cfkLost);
+  $("bCfkTurn").textContent = money(i.turnover);
+  $("bCfkTotal").textContent = money(c.cfkTotal);
+
+  // verdict
+  const v = verdictFor(s), V = VERDICTS[v];
+  $("verdictWord").textContent = V.word;
+  $("verdictLine").innerHTML = V.line(s);
+  $("beOffer").textContent = money(c.breakEven);
+  $("beNote").textContent = i.offer <= c.breakEven
+    ? `Any offer at or under ${money(c.breakEven)} beats eviction on pure math. Yours is ${money(i.offer)} — inside the line.`
+    : `Any offer at or under ${money(c.breakEven)} beats eviction on pure math. Yours is ${money(i.offer)} — over the line by ${money(i.offer - c.breakEven)}. Counter lower.`;
+
+  // sensitivity table
+  let rows = "";
+  for (let m = 1; m <= 9; m++){
+    const ii = Object.assign({}, i, { evictMonths: m });
+    const cc = calc(ii), vv = verdictFor(cc.savings);
+    const cls = m === i.evictMonths ? ' class="cur"' : (vv === "pay" ? ' class="hl"' : "");
+    const label = vv === "pay" ? "PAY THEM" : vv === "evict" ? "EVICT" : "TOSS-UP";
+    rows += `<tr${cls}><td>${m} mo${m>1?"s":""}</td><td>${money(cc.savings)}</td><td>${label}</td></tr>`;
+  }
+  $("sensBody").innerHTML = rows;
+}
+
+function getScenarios(){
+  try { return JSON.parse(localStorage.getItem(KEY)) || []; }
+  catch(e){ return []; }
+}
+function setScenarios(a){ localStorage.setItem(KEY, JSON.stringify(a)); }
+function renderScenarios(){
+  const list = getScenarios();
+  if (!list.length){
+    $("scenList").innerHTML = '<p class="note">No saved scenarios yet. Dial in a unit above and save it.</p>';
+    return;
+  }
+  $("scenList").innerHTML = list.map((s, idx) => {
+    const c = calc(s.inputs), v = verdictFor(c.savings);
+    const label = v === "pay" ? "PAY THEM" : v === "evict" ? "EVICT" : "TOSS-UP";
+    return `<div class="scen">
+      <div><div class="nm serif">${s.name}</div>
+      <div class="dt">${money(s.inputs.rent)}/mo · ${s.inputs.evictMonths}-mo eviction · offer ${money(s.inputs.offer)} · <span style="color:var(--gold)">${label} · ${money(c.savings)}</span></div></div>
+      <div style="display:flex;gap:8px">
+        <button data-load="${idx}">Load</button>
+        <button data-del="${idx}">Delete</button>
+      </div>
+    </div>`;
+  }).join("");
+  $("scenList").querySelectorAll("[data-load]").forEach(b => b.addEventListener("click", () => {
+    const s = getScenarios()[parseInt(b.getAttribute("data-load"),10)];
+    if (!s) return;
+    $("rent").value = s.inputs.rent; $("unpaid").value = s.inputs.unpaid;
+    $("evictMonths").value = s.inputs.evictMonths; $("legal").value = s.inputs.legal;
+    $("damage").value = s.inputs.damage; $("turnover").value = s.inputs.turnover;
+    $("offer").value = s.inputs.offer;
+    render(); window.scrollTo({top:0, behavior:"smooth"});
+  }));
+  $("scenList").querySelectorAll("[data-del]").forEach(b => b.addEventListener("click", () => {
+    const a = getScenarios(); a.splice(parseInt(b.getAttribute("data-del"),10),1);
+    setScenarios(a); renderScenarios();
+  }));
+}
+
+$("saveBtn").addEventListener("click", () => {
+  const i = inputs(), c = calc(i), v = verdictFor(c.savings);
+  const name = "Unit · " + money(i.rent) + "/mo · " + new Date().toLocaleDateString("en-US",{month:"short",day:"numeric"});
+  const a = getScenarios(); a.unshift({ name, inputs: i, savedAt: Date.now() });
+  setScenarios(a.slice(0, 24)); renderScenarios();
+});
+$("copyBtn").addEventListener("click", () => {
+  const i = inputs(), c = calc(i), v = verdictFor(c.savings);
+  const label = v === "pay" ? "PAY THEM" : v === "evict" ? "EVICT" : "TOSS-UP";
+  const txt =
+`EVICT OR PAY — ${money(i.rent)}/mo rent
+Eviction path: ${money(c.evTotal)} total (${i.evictMonths} mo lost rent ${money(c.evLost)} + legal ${money(i.legal)} + damage ${money(i.damage)} + turnover ${money(i.turnover)}; sunk ${money(c.sunk)} both ways)
+Cash-for-keys path: ${money(c.cfkTotal)} total (offer ${money(i.offer)} + ~14 days lost ${money(c.cfkLost)} + turnover ${money(i.turnover)})
+Verdict: ${label} — paying them saves ${money(c.savings)}. Break-even offer: ${money(c.breakEven)}.`;
+  navigator.clipboard.writeText(txt).then(() => {
+    $("copyBtn").textContent = "Copied";
+    setTimeout(() => { $("copyBtn").textContent = "Copy summary"; }, 1600);
+  });
+});
+
+["rent","unpaid","evictMonths","legal","damage","turnover","offer"].forEach(id =>
+  $(id).addEventListener("input", render));
+
+render();
+renderScenarios();
+
+if ("serviceWorker" in navigator){
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
+</script>
+</body>
+</html>
